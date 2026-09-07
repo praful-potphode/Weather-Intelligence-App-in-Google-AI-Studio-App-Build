@@ -272,7 +272,7 @@ export default function App() {
               className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline flex items-center gap-1 cursor-pointer"
             >
               <CloudUpload className="w-3.5 h-3.5" />
-              <span>Deploy to Cloudflare Pages</span>
+              <span>Help Notes & Cloudflare Deployment</span>
             </button>
             <span>•</span>
             <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">

@@ -1,46 +1,50 @@
-# Weather Intelligence App — Deployment Guide
+# Weather Intelligence App — Deployment & Help Guide
 
-This guide details how to take the Weather Intelligence App built in **Google AI Studio App Build**, connect it to **GitHub**, deploy it via **Cloudflare Pages**, and prove that the deployed application runs successfully on a Cloudflare Pages URL.
+This guide details the complete process to export the Weather Intelligence App from **Google AI Studio App Build**, connect it to **GitHub**, deploy it through **Cloudflare Pages**, and verify that the deployed application runs successfully on a Cloudflare Pages URL (`https://<project-name>.pages.dev`).
 
 ---
 
 ## 1. Architectural Readiness as a Deployable Software Artifact
 
 The Weather Intelligence App is architected specifically for friction-free static deployment:
-- **Build Artifact:** Pure client-side React 19 + Vite SPA compiling into the `dist/` directory via `npm run build`.
-- **Zero API Key Leakage / Zero Backend Requirement:** Data is fetched directly and securely via the public, CORS-enabled Open-Meteo REST APIs (`https://api.open-meteo.com` and `https://geocoding-api.open-meteo.com`), eliminating the need for backend secret management.
-- **Edge Compatible:** Static assets (`dist/index.html`, `dist/assets/*`) are served globally via Cloudflare's Anycast Edge CDN with custom headers configured in `public/_headers`.
-- **SPA Fallback:** Includes `public/_routes.json` ensuring seamless client-side single-page routing without 404 errors.
+- **Zero Server Secrets / Client-Safe:** Telemetry is fetched directly and securely from Open-Meteo's open CORS-enabled APIs (`https://geocoding-api.open-meteo.com` and `https://api.open-meteo.com`). There are no server-side secrets or API keys required, making the app 100% safe to deploy as a public static site.
+- **Vite Static SPA Output:** Running `npm run build` compiles TypeScript and Tailwind into optimized, self-contained static assets in `dist/`.
+- **Global Edge Optimization:** Included `public/_headers` provisions HTTP security headers (HSTS, X-Content-Type-Options, Referrer-Policy) and long-term caching for immutable asset bundles.
+- **Client-Side Routing Support:** Included `public/_routes.json` ensures Cloudflare Pages serves `dist/index.html` on all subpaths, preventing 404 errors.
 
 ---
 
-## 2. Connecting the App Directly to GitHub
+## 2. Exporting from Google AI Studio to GitHub
+
+You can export the project from Google AI Studio into GitHub using either the UI or the Git CLI:
 
 ### Option A: Via Google AI Studio UI (Recommended)
-1. In the Google AI Studio App Build interface, click on the **Settings** / **Export** menu in the top navigation or sidebar.
+1. In the Google AI Studio App Build workspace, click the **Settings / Menu** icon (top right or left sidebar).
 2. Select **Export to GitHub**.
-3. Authenticate with your GitHub account when prompted and choose either an existing repository or create a new one (e.g. `weather-intelligence`).
-4. Click **Export / Commit**. AI Studio will push the entire codebase, including all dependencies and configuration files, to your chosen repository on the `main` branch.
+3. Authorize Google AI Studio to access your GitHub account.
+4. Choose an existing repository or create a new one (e.g., `weather-intelligence`).
+5. Choose the **main** branch and click **Export / Commit**.
+6. Google AI Studio pushes the entire project directory directly into your GitHub repository.
 
 ### Option B: Via Git CLI
-If pushing from your local workstation or container terminal:
+If you are working from a terminal or downloaded zip:
 ```bash
-# Initialize git if not already initialized
+# 1. Initialize git
 git init
 
-# Stage all files
+# 2. Stage all project files
 git add -A
 
-# Commit changes
-git commit -m "feat: complete Weather Intelligence App with Cloudflare Pages deployment readiness"
+# 3. Commit the changes
+git commit -m "feat: complete Weather Intelligence app with Cloudflare Pages deployment readiness"
 
-# Set branch to main
+# 4. Set branch to main
 git branch -M main
 
-# Add your GitHub repository remote
-git remote add origin https://github.com/<YOUR-USERNAME>/weather-intelligence.git
+# 5. Add your GitHub remote repository
+git remote add origin https://github.com/<YOUR-GITHUB-USERNAME>/weather-intelligence.git
 
-# Push to GitHub
+# 6. Push to GitHub
 git push -u origin main
 ```
 
@@ -50,56 +54,55 @@ git push -u origin main
 
 ### Step 1: Connect Repository in Cloudflare
 1. Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. In the left-hand navigation, select **Workers & Pages**.
+2. In the left navigation, select **Compute (Workers & Pages)** > **Workers & Pages**.
 3. Click **Create application** > select the **Pages** tab > click **Connect to Git**.
-4. Select your GitHub account and choose the `weather-intelligence` repository.
+4. Authorize Cloudflare to access your GitHub account and select your `weather-intelligence` repository.
+5. Click **Begin setup**.
 
 ### Step 2: Configure Build Settings
-Fill in the deployment parameters as follows:
-| Setting | Recommended Value |
-| :--- | :--- |
-| **Project name** | `weather-intelligence` |
-| **Production branch** | `main` |
-| **Framework preset** | `Vite` (or `None`) |
-| **Build command** | `npm run build` |
-| **Build output directory** | `dist` |
-| **Root directory** | `/` (leave blank or root) |
+Fill in the configuration fields:
 
-*(Optional)* Under **Environment variables**, set `NODE_VERSION` to `20` (Cloudflare Pages defaults to modern Node).
+| Setting | Recommended Value | Notes |
+| :--- | :--- | :--- |
+| **Project name** | `weather-intelligence` | Determines your live subdomain: `https://<name>.pages.dev` |
+| **Production branch** | `main` | Deploys automatically on every git push |
+| **Framework preset** | `Vite` (or `None`) | Pre-configures the build environment |
+| **Build command** | `npm run build` | Compiles the React + TypeScript app to `dist/` |
+| **Build output directory** | `dist` | Cloudflare serves static assets from this folder |
+| **Root directory** | *(leave blank or `/`)* | Project root |
 
-### Step 3: Deploy
+*(Optional)* Under **Environment variables**, add `NODE_VERSION` with value `20`.
+
+### Step 3: Deploy & Launch
 1. Click **Save and Deploy**.
-2. Cloudflare Pages initiates an automated build container, executes `npm ci` and `npm run build`, and deploys the contents of `dist/` across 300+ global edge locations.
-3. The build completes in approximately 25–40 seconds.
+2. Cloudflare Pages boots an isolated build container, runs `npm ci` and `npm run build`, and deploys the contents of `dist/` across 300+ global edge locations.
+3. The build completes in approximately 30–45 seconds.
 
 ---
 
-## 4. Automated CI/CD via GitHub Actions (Alternative)
+## 4. Proving and Verifying the Deployed Application
 
-A ready-to-use GitHub Actions workflow is provided at `.github/workflows/deploy.yml`. If you prefer deploying directly via GitHub Actions:
-1. In Cloudflare Dashboard, create an API token with **Cloudflare Pages: Edit** permissions.
-2. In your GitHub repository settings, add two secrets:
-   - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API Token.
-   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID (found on your dashboard).
-3. Every push to the `main` branch will automatically build and deploy the applet.
-
----
-
-## 5. Proving and Verifying the Deployed Application
-
-Once deployed, Cloudflare generates a production URL:
+Once deployed, Cloudflare generates your live production URL:
 ```
-https://<PROJECT-NAME>.pages.dev
+https://<project-name>.pages.dev
 # Example: https://weather-intelligence.pages.dev
 ```
 
 ### Verification Checklist:
-1. **HTTP Status & SSL:** Navigate to the URL in any browser. Check that the connection is secured with HTTPS (Cloudflare Universal SSL certificate) and returns an HTTP `200 OK`.
-2. **City Search Verification:** Type a city name (e.g., "Tokyo", "London", "New York"). Observe the live Open-Meteo autocomplete dropdown.
-3. **Current Observation:** Select a city to verify temperature, feels like, humidity, wind velocity, UV index, and air pressure render accurately.
-4. **24-Hour Timeline:** Confirm the horizontal hourly forecast displays temperature curves and rain probabilities for the next 24 hours.
-5. **Planning Intelligence Engine:** Verify that:
-   - The **Best Outdoor Window** calculates the optimal hours for outdoor activities.
-   - The **Clothing & Essentials Guide** adapts to the current temperature and provides accurate checklist indicators (umbrella, sunglasses, SPF).
-   - **Activity Suitability Scores** (running, cycling, dining, hiking, stargazing) compute based on current meteorological parameters.
-6. **In-App Prover Tool:** You can also click the **Deploy & GitHub** button in the app header and run the live probe against your Cloudflare Pages URL directly.
+1. **Edge Reachability & HTTPS:** Open `https://<project-name>.pages.dev` in your browser. Verify the connection has a valid Cloudflare SSL certificate and returns `200 OK`.
+2. **Geocoding & City Search:** Enter a city (e.g. `Tokyo` or `Paris`). Confirm the autocomplete dropdown queries `geocoding-api.open-meteo.com` and populates matching locations.
+3. **Current Observations & 7-Day Forecast:** Select a city and verify real-time temperature, feels like, humidity, wind, UV index, and 7-day forecast cards render accurately.
+4. **Planning Intelligence:** Verify dynamic alerts, optimal outdoor activity window, wardrobe recommendations, and activity suitability scores.
+5. **Interactive Validation Suite:** Use the in-app test buttons below the search bar to test valid cities, 0-result searches, and HTTP 400 error handling.
+6. **In-App Deploy Verifier:** Click the **Help & Deploy** button in the header to run the live URL probe tool against any `*.pages.dev` address.
+
+---
+
+## 5. Automated CI/CD via GitHub Actions (Alternative)
+
+A ready-to-use GitHub Actions workflow is provided at `.github/workflows/deploy.yml`:
+1. In Cloudflare Dashboard, create an API token with **Cloudflare Pages: Edit** permissions.
+2. In your GitHub repository settings, add two secrets:
+   - `CLOUDFLARE_API_TOKEN`: Your Cloudflare API Token.
+   - `CLOUDFLARE_ACCOUNT_ID`: Your Cloudflare Account ID.
+3. Every push to the `main` branch will automatically build and publish to Cloudflare Pages.

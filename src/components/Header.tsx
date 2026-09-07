@@ -1,5 +1,5 @@
 import React from 'react';
-import { CloudSun, RefreshCw, Globe, Github, CloudUpload } from 'lucide-react';
+import { CloudSun, RefreshCw, Globe, Github, CloudUpload, HelpCircle } from 'lucide-react';
 import { TemperatureUnit } from '../types/weather';
 
 interface HeaderProps {
@@ -90,16 +90,17 @@ export const Header: React.FC<HeaderProps> = ({
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin text-sky-500' : ''}`} />
           </button>
 
-          {/* Cloudflare Deploy Artifact Hub */}
+          {/* Cloudflare Deploy Artifact Hub & Help Notes */}
           <button
             id="open-deploy-modal-btn"
             type="button"
             onClick={onOpenDeployModal}
+            title="Help Notes & Deployment Instructions: AI Studio to GitHub & Cloudflare Pages"
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-orange-500 hover:bg-orange-600 text-white shadow-xs transition-all cursor-pointer"
           >
-            <CloudUpload className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Deploy & GitHub</span>
-            <span className="sm:hidden">Deploy</span>
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Help & Deploy</span>
+            <span className="sm:hidden">Help</span>
           </button>
         </div>
       </div>
