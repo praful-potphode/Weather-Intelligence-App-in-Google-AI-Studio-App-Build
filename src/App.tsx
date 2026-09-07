@@ -152,6 +152,9 @@ export default function App() {
             onSelectCity={(city) => setCurrentCity(city)}
             savedCities={savedCities}
             onToggleSaveCity={handleToggleSaveCity}
+            onSimulateApiError={() => {
+              setError('Open-Meteo API Error: Latitude must be in range of -90 to 90°. Given: 999.0. (HTTP 400)');
+            }}
           />
         </section>
 

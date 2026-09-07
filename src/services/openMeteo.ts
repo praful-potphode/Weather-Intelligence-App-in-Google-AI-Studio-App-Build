@@ -385,7 +385,16 @@ export async function fetchWeatherData(
   const response = await fetch(endpoint);
 
   if (!response.ok) {
-    throw new Error(`Open-Meteo forecast failed with status ${response.status}`);
+    let errorDetail = `Open-Meteo forecast failed with status ${response.status}`;
+    try {
+      const errJson = await response.json();
+      if (errJson?.reason) {
+        errorDetail = `Open-Meteo API Error: ${errJson.reason} (HTTP ${response.status})`;
+      }
+    } catch {
+      // response might not be JSON
+    }
+    throw new Error(errorDetail);
   }
 
   const data = await response.json();
